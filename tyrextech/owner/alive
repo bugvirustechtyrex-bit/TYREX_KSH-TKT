@@ -1,0 +1,77 @@
+// ============================================
+// CREDIT: BOT YAKO
+// WhatsApp Channel: [weka channel yako]
+// GitHub: [weka github yako]
+// ============================================
+
+export default {
+  name: 'alive',
+  category: 'owner',
+  async execute(sock, msg) {
+    try {
+      const start = Date.now();
+      const uptime = process.uptime();
+      
+      // Format uptime
+      const days = Math.floor(uptime / 86400);
+      const hours = Math.floor((uptime % 86400) / 3600);
+      const minutes = Math.floor((uptime % 3600) / 60);
+      const seconds = Math.floor(uptime % 60);
+      
+      const uptimeText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      
+      // Alive response messages
+      const aliveMessages = [
+        "✅ *BOT IS ALIVE!*\n⏱️ Uptime: %uptime%\n🏓 Latency: %latency%ms",
+        "🤖 *SILA SMD ACTIVE*\n🚀 Speed: %latency%ms\n⏰ Online: %uptime%",
+        "⚡ *BOT RUNNING SMOOTHLY*\n📡 Response: %latency%ms\n💻 Uptime: %uptime%",
+        "🔥 *SILA TECH AT YOUR SERVICE*\n✨ Latency: %latency%ms\n⌛ Active for: %uptime%",
+        "🎯 *BOT IS READY!*\n💨 Ping: %latency%ms\n🕐 Online: %uptime%"
+      ];
+      
+      // Get random alive message
+      const randomMsg = aliveMessages[Math.floor(Math.random() * aliveMessages.length)];
+      const latency = Date.now() - start;
+      const aliveText = randomMsg
+        .replace('%latency%', latency)
+        .replace('%uptime%', uptimeText);
+      
+      // Newsletter JID
+      const newsletterJid = "120363402325089913@newsletter";
+      
+      // Picha URL - Badilisha na picha yako 👇
+      const botPicUrl = "https://i.imgur.com/GhR5f3M.jpeg";
+      
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: " ",
+        contextInfo: {
+          externalAdReply: {
+            title: "𝐒𝐈𝐋𝐀 𝐒𝐌𝐃",
+            body: aliveText,
+            mediaType: 1,
+            previewType: 0,
+            thumbnailUrl: botPicUrl,
+            sourceUrl: `https://wa.me/${msg.key.participant?.split('@')[0] || '255000000000'}`,
+            renderLargerThumbnail: true,
+            showAdAttribution: true,
+            containsAutoReply: true
+          },
+          mentionedJid: [msg.key.participant],
+          forwardingScore: 999,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: newsletterJid,
+            newsletterName: "𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡",
+            serverMessageId: 1
+          }
+        }
+      }, { quoted: msg });
+      
+    } catch (e) {
+      console.log("Alive Error:", e);
+      await sock.sendMessage(msg.key.remoteJid, { 
+        text: `❌ Error: ${e.message}` 
+      }, { quoted: msg });
+    }
+  }
+};
