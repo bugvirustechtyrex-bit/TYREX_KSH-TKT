@@ -1,0 +1,196 @@
+// ============================================
+// SILA CONFIG - Bot Configuration
+// Powered by SILA TECH
+// ============================================
+
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const CONFIG_FILE = path.join(__dirname, 'silamd', 'database', 'config.json');
+
+// ============ DEFAULT CONFIGURATION ============
+const defaultConfig = {
+    // Bot Identity
+    BOT_NAME: 'SILA SMD',
+    BOT_VERSION: '2.0.0',
+    BOT_PREFIX: '.',
+    
+    // Font Style
+    BOT_FONT: 'bold',
+    
+    // Footer Text
+    FOOTER_TEXT: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
+    POWERED_BY: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡',
+    
+    // Newsletter
+    NEWSLETTER_JID: '120363402325089913@newsletter',
+    NEWSLETTER_NAME: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
+    
+    // Media
+    BOT_AVATAR_URL: 'https://i.ibb.co/XftY01RL/sila-smd.png',
+    BOT_THUMBNAIL_URL: 'https://i.ibb.co/XftY01RL/sila-smd.png',
+    
+    // Groups
+    GROUP_LINK: 'https://chat.whatsapp.com/IS276Wg9zcuCnJRiMDI64g',
+    GROUP_NAME: 'SILA TECH Community',
+    GROUP_INVITE_CODE: 'IS276Wg9zcuCnJRiMDI64g',
+    
+    // Owner
+    OWNER_NUMBER: '255700000000',
+    
+    // Features
+    AUTO_JOIN_ENABLED: true,
+    AUTO_VIEW_STATUS: true,
+    AUTO_REACT_STATUS: true,
+    RATE_LIMIT_ENABLED: true,
+    AUTO_CONNECT_ON_LINK: true,
+    AUTO_CONNECT_ON_START: true,
+    SEND_WELCOME_MESSAGE: true,
+    
+    // Timeout Settings
+    MIN_COMMAND_DELAY: 1000,
+    STICKER_DELAY: 2000,
+    CONNECTION_TIMEOUT: 40000,
+    KEEP_ALIVE_INTERVAL: 15000,
+    
+    // Max retry attempts
+    MAX_RETRY_ATTEMPTS: 10,
+    
+    // Directories
+    SESSION_DIR: './silamd/sessions',
+    DATABASE_DIR: './silamd/database',
+    CACHE_DIR: './silamd/cache',
+    COMMANDS_DIR: './silatech',
+    FONTS_DIR: './sila/fonts',
+    
+    // Deployment
+    DEPLOY_MODE: process.env.DEPLOY_MODE || '2',
+    SESSION_ID: process.env.SESSION_ID || '',
+};
+
+// ============ CONFIG INSTANCE ============
+let config = { ...defaultConfig };
+
+// ============ LOAD CONFIG FROM DATABASE ============
+function loadConfigFromDatabase() {
+    try {
+        // Ensure directory exists
+        const dir = path.dirname(CONFIG_FILE);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        if (fs.existsSync(CONFIG_FILE)) {
+            const savedConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+            config = { ...defaultConfig, ...savedConfig };
+            console.log('✅ Config loaded from database');
+        } else {
+            // Save default config
+            fs.writeFileSync(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
+            config = { ...defaultConfig };
+            console.log('✅ Default config created');
+        }
+    } catch (error) {
+        console.error('Error loading config:', error.message);
+        config = { ...defaultConfig };
+    }
+    return config;
+}
+
+// ============ SAVE CONFIG TO DATABASE ============
+function saveConfigToDatabase() {
+    try {
+        const dir = path.dirname(CONFIG_FILE);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error saving config:', error.message);
+        return false;
+    }
+}
+
+// Load config on module load
+loadConfigFromDatabase();
+
+// ============ CONFIG UPDATE FUNCTION ============
+export function updateConfig(key, value) {
+    if (config.hasOwnProperty(key)) {
+        const oldValue = config[key];
+        config[key] = value;
+        
+        // Also update process.env for compatibility
+        if (process.env[key] !== undefined) {
+            process.env[key] = value;
+        }
+        
+        // Save to database
+        saveConfigToDatabase();
+        
+        return { success: true, key, oldValue, newValue: value };
+    }
+    return { success: false, error: `Config key '${key}' not found` };
+}
+
+export function getConfig() {
+    return { ...config };
+}
+
+export function getConfigValue(key) {
+    return config[key] !== undefined ? config[key] : null;
+}
+
+export function reloadConfig() {
+    return loadConfigFromDatabase();
+}
+
+// ============ CONTACT KEY FOR MESSAGES ============
+export const fkontak = {
+    "key": {
+        "participant": '0@s.whatsapp.net',
+        "remoteJid": '0@s.whatsapp.net',
+        "fromMe": false,
+        "id": "Halo"
+    },
+    "message": {
+        "conversation": "𝚂𝙸𝙻𝙰"
+    }
+};
+
+// ============ GET CONTEXT INFO ============
+export const getContextInfo = (m, botName = config.BOT_NAME) => {
+    return {
+        mentionedJid: m && m.sender ? [m.sender] : [],
+        forwardingScore: 999,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: config.NEWSLETTER_JID,
+            newsletterName: config.NEWSLETTER_NAME,
+            serverMessageId: 143,
+        },
+    };
+};
+
+// ============ GET FOOTER ============
+export const getFooter = () => {
+    return `> ® ${config.POWERED_BY}`;
+};
+
+// ============ CHECK IF OWNER ============
+export function isOwnerNumber(number) {
+    const cleanNumber = number.toString().replace(/[^0-9]/g, '');
+    const ownerClean = config.OWNER_NUMBER.toString().replace(/[^0-9]/g, '');
+    return cleanNumber === ownerClean;
+}
+
+// Export config as default
+export default config;
