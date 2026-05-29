@@ -12,7 +12,17 @@ export default {
     async execute(sock, msg, args, prefix, config) {
         const chatId = msg.key.remoteJid;
         const commands = config.commands || new Map();
-        const commandCategories = config.commandCategories || new Map();
+        
+        // Collect commands by category
+        const categories = new Map();
+        
+        for (const [cmdName, cmdObj] of commands) {
+            const category = cmdObj.category || 'general';
+            if (!categories.has(category)) {
+                categories.set(category, []);
+            }
+            categories.get(category).push(cmdName);
+        }
         
         // Header ya menu
         let menuText = `🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸\n`;
@@ -30,17 +40,17 @@ export default {
         menuText += `└───────────────────────\n\n`;
         
         // Categories na commands zao
-        for (const [category, cmdList] of commandCategories) {
+        for (const [category, cmdList] of categories) {
             menuText += `┌─⊷⊷⊷⊷ *${getCategoryEmoji(category)} ${category.toUpperCase()}* ⊷⊷⊷⊷\n`;
             menuText += `├───────────────────────\n`;
             
-            cmdList.forEach(cmd => {
+            for (const cmd of cmdList) {
                 const cmdObj = commands.get(cmd);
                 const desc = cmdObj?.description || 'No description';
                 menuText += `│  ${prefix}${cmd}\n`;
                 menuText += `│  ↳ ${desc.substring(0, 40)}\n`;
                 menuText += `│\n`;
-            });
+            }
             menuText += `└───────────────────────\n\n`;
         }
         
