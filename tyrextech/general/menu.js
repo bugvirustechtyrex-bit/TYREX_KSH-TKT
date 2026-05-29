@@ -119,25 +119,11 @@ export default {
             menuMessage += `╰┄┄┄┄┄┈┈┈┈┄┄┄⊷\n\n`;
             menuMessage += `> ® ${botName}`;
             
+            // First send the image
             await sock.sendMessage(chatId, {
-                text: menuMessage,
-                contextInfo: {
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363424973782944@newsletter',
-                        newsletterName: 'Tyrex_Ksh Tech',
-                        serverMessageId: 1
-                    },
-                    externalAdReply: {
-                        title: botName,
-                        body: `⚡ ${totalCommands} Commands Available`,
-                        thumbnailUrl: 'https://i.ibb.co/V0x5RCkK/file-00000000b26c720cbac7434c723b3ca4.png',
-                        sourceUrl: 'https://whatsapp.com/channel/0029VafUeCvRWkqX7TQhVR0P',
-                        mediaType: 1,
-                        renderLargerThumbnail: true
-                    }
-                }
+                image: { url: 'https://i.ibb.co/V0x5RCkK/file-00000000b26c720cbac7434c723b3ca4.png' },
+                caption: menuMessage,
+                contextInfo: config.getContextInfo(msg)
             }, { quoted: msg });
             
         } catch (e) {
