@@ -1,11 +1,11 @@
 // ============================================
-// DEMOTE COMMAND - Remove admin status
+// DEMOTE COMMAND - Remove admin status (Reply or Mention)
 // Powered by Tyrex_Ksh Tech
 // ============================================
 
 export default {
     name: 'demote',
-    description: 'Remove admin status from member',
+    description: 'Remove admin status (reply to their message or mention)',
     category: 'group',
     alias: ['removeadmin', 'unadmin'],
     
@@ -33,23 +33,43 @@ export default {
             
             if (!isAdmin) {
                 await sock.sendMessage(chatId, { 
-                    text: "❌ Only admins can demote members!\n\n*Note:* Make sure the bot is also an admin in this group." 
+                    text: "❌ Only admins can demote members!" 
                 }, { quoted: msg });
                 return;
             }
             
-            // Get user to demote
+            // Get user to demote - PRIORITY: REPLY > MENTION > ARGUMENT
             let userToDemote = null;
             
-            if (msg.message?.extendedTextMessage?.contextInfo?.mentionedJid) {
-                userToDemote = msg.message.extendedTextMessage.contextInfo.mentionedJid[0];
-            } else if (msg.message?.extendedTextMessage?.contextInfo?.participant) {
+            // 1. Check if replying to a message
+            if (msg.message?.extendedTextMessage?.contextInfo?.participant) {
                 userToDemote = msg.message.extendedTextMessage.contextInfo.participant;
+            }
+            // 2. Check if mentioned someone
+            else if (msg.message?.extendedTextMessage?.contextInfo?.mentionedJid) {
+                userToDemote = msg.message.extendedTextMessage.contextInfo.mentionedJid[0];
+            }
+            // 3. Check if number provided in args
+            else if (args[0]) {
+                let number = args[0].replace(/[^0-9]/g, '');
+                if (number.startsWith('0')) number = '255' + number.slice(1);
+                if (number.startsWith('255')) number = number + '@s.whatsapp.net';
+                userToDemote = number;
             }
             
             if (!userToDemote) {
                 await sock.sendMessage(chatId, {
-                    text: `📝 *Usage:* ${prefix}demote @user\n\nExample: ${prefix}demote @username`,
+                    text: `📝 *How to use:*\n\n1️⃣ *Reply* to user's message:\n   ${prefix}demote\n\n2️⃣ *Mention* the user:\n   ${prefix}demote @username\n\n3️⃣ *Phone number:*\n   ${prefix}demote 255xxxxxxxxx\n\n🌺 *Powered by Tyrex_Ksh Tech*`,
+                    contextInfo: config.getContextInfo(msg)
+                }, { quoted: msg });
+                return;
+            }
+            
+            // Check if user is in group
+            const targetParticipant = participants.find(p => p.id === userToDemote);
+            if (!targetParticipant) {
+                await sock.sendMessage(chatId, {
+                    text: `❌ User is not in this group!`,
                     contextInfo: config.getContextInfo(msg)
                 }, { quoted: msg });
                 return;
@@ -67,7 +87,7 @@ export default {
         } catch (error) {
             console.error("Demote error:", error);
             await sock.sendMessage(chatId, {
-                text: `❌ *Failed to demote user!*\n\nError: ${error.message}\n\n*Requirements:*\n• Bot must be admin\n• User must be admin currently`,
+                text: `❌ *Failed to demote user!*\n\nError: ${error.message}\n\n🌺 *Powered by Tyrex_Ksh Tech*`,
                 contextInfo: config.getContextInfo(msg)
             }, { quoted: msg });
         }
