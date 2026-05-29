@@ -1,6 +1,6 @@
 // ============================================
-// SILA CONFIG - Bot Configuration
-// Powered by SILA TECH
+// TYREX KSH BOT CONFIG - Bot Configuration
+// Powered by Tyrex KSH Tech
 // ============================================
 
 import dotenv from 'dotenv';
@@ -13,12 +13,12 @@ dotenv.config();
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const CONFIG_FILE = path.join(__dirname, 'silamd', 'database', 'config.json');
+const CONFIG_FILE = path.join(__dirname, 'database', 'config.json');
 
 // ============ DEFAULT CONFIGURATION ============
 const defaultConfig = {
     // Bot Identity
-    BOT_NAME: 'SILA SMD',
+    BOT_NAME: '༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒',
     BOT_VERSION: '2.0.0',
     BOT_PREFIX: '.',
     
@@ -26,24 +26,24 @@ const defaultConfig = {
     BOT_FONT: 'bold',
     
     // Footer Text
-    FOOTER_TEXT: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
-    POWERED_BY: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡',
+    FOOTER_TEXT: '© 𝐓𝐘𝐑𝐄𝐗 𝐊𝐒𝐇 𝐓𝐄𝐂𝐇',
+    POWERED_BY: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐓𝐲𝐫𝐞𝐱 𝐊𝐒𝐇 𝐓𝐞𝐜𝐡',
     
-    // Newsletter
-    NEWSLETTER_JID: '120363402325089913@newsletter',
-    NEWSLETTER_NAME: '© 𝐒𝐈𝐋𝐀 𝐌𝐃',
+    // Newsletter/Channel
+    NEWSLETTER_JID: '120363424973782944@newsletter',
+    NEWSLETTER_NAME: '༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒',
     
     // Media
-    BOT_AVATAR_URL: 'https://i.ibb.co/XftY01RL/sila-smd.png',
-    BOT_THUMBNAIL_URL: 'https://i.ibb.co/XftY01RL/sila-smd.png',
+    BOT_AVATAR_URL: 'https://i.ibb.co/V0x5RCkK/file-00000000b26c720cbac7434c723b3ca4.png',
+    BOT_THUMBNAIL_URL: 'https://i.ibb.co/V0x5RCkK/file-00000000b26c720cbac7434c723b3ca4.png',
     
     // Groups
-    GROUP_LINK: 'https://chat.whatsapp.com/IS276Wg9zcuCnJRiMDI64g',
-    GROUP_NAME: 'SILA TECH Community',
-    GROUP_INVITE_CODE: 'IS276Wg9zcuCnJRiMDI64g',
+    GROUP_LINK: 'https://chat.whatsapp.com/CGJQ0TGin3w4FmG3bKZ2d3',
+    GROUP_NAME: '𝐓𝐘𝐑𝐄𝐗 𝐊𝐒𝐇 𝐓𝐄𝐂𝐇 Community',
+    GROUP_INVITE_CODE: 'CGJQ0TGin3w4FmG3bKZ2d3',
     
     // Owner
-    OWNER_NUMBER: '255700000000',
+    OWNER_NUMBER: '255650583044',
     
     // Features
     AUTO_JOIN_ENABLED: true,
@@ -64,11 +64,11 @@ const defaultConfig = {
     MAX_RETRY_ATTEMPTS: 10,
     
     // Directories
-    SESSION_DIR: './silamd/sessions',
-    DATABASE_DIR: './silamd/database',
-    CACHE_DIR: './silamd/cache',
-    COMMANDS_DIR: './silatech',
-    FONTS_DIR: './sila/fonts',
+    SESSION_DIR: './database/sessions',
+    DATABASE_DIR: './database',
+    CACHE_DIR: './database/cache',
+    COMMANDS_DIR: './commands',
+    FONTS_DIR: './fonts',
     
     // Deployment
     DEPLOY_MODE: process.env.DEPLOY_MODE || '2',
@@ -91,11 +91,17 @@ function loadConfigFromDatabase() {
             const savedConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
             config = { ...defaultConfig, ...savedConfig };
             console.log('✅ Config loaded from database');
+            console.log(`📢 Bot Name: ${config.BOT_NAME}`);
+            console.log(`📢 Channel JID: ${config.NEWSLETTER_JID}`);
+            console.log(`👤 Owner Number: ${config.OWNER_NUMBER}`);
+            console.log(`👥 Group Link: ${config.GROUP_LINK}`);
         } else {
             // Save default config
             fs.writeFileSync(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
             config = { ...defaultConfig };
             console.log('✅ Default config created');
+            console.log(`👤 Owner Number: ${config.OWNER_NUMBER}`);
+            console.log(`👥 Group Link: ${config.GROUP_LINK}`);
         }
     } catch (error) {
         console.error('Error loading config:', error.message);
@@ -162,7 +168,7 @@ export const fkontak = {
         "id": "Halo"
     },
     "message": {
-        "conversation": "𝚂𝙸𝙻𝙰"
+        "conversation": "𝐓𝐘𝐑𝐄𝐗 𝐊𝐒𝐇 𝐌𝐃"
     }
 };
 
