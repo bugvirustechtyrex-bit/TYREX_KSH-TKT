@@ -1,82 +1,86 @@
 // ============================================
-// MENU COMMAND - Show bot menu
-// Powered by SILA TECH
+// MENU COMMAND - Display bot menu with style
+// Powered by Tyrex_Ksh Tech
 // ============================================
 
 export default {
     name: 'menu',
-    description: 'Show all available commands',
+    description: 'Display bot menu with all commands',
     category: 'general',
-    alias: ['help', 'commands', 'cmds'],
+    alias: ['m', 'allmenu', 'cmdlist', 'menulist'],
     
     async execute(sock, msg, args, prefix, config) {
         const chatId = msg.key.remoteJid;
-        const botName = config.BOT_NAME || 'SILA SMD';
-        const version = config.VERSION || '1.0.0';
-        const currentPrefix = config.getCurrentPrefix ? config.getCurrentPrefix() : prefix;
-        
-        // Get all commands organized by category
         const commands = config.commands || new Map();
-        const categories = new Map();
+        const commandCategories = config.commandCategories || new Map();
         
-        for (const [cmdName, cmd] of commands) {
-            if (!categories.has(cmd.category)) {
-                categories.set(cmd.category, []);
-            }
-            categories.get(cmd.category).push({
-                name: cmdName,
-                description: cmd.description || 'No description',
-                alias: cmd.alias || []
+        // Header ya menu
+        let menuText = `🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸\n`;
+        menuText += `   *𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃 𝐌𝐄𝐍𝐔*\n`;
+        menuText += `🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸\n\n`;
+        
+        menuText += `┌─⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷\n`;
+        menuText += `│  ✨ *BOT INFORMATION* ✨\n`;
+        menuText += `├───────────────────────\n`;
+        menuText += `│  🤖 *Name:* ${config.BOT_NAME || 'TYREX_KSH MD'}\n`;
+        menuText += `│  📌 *Version:* ${config.BOT_VERSION || '1.0.0'}\n`;
+        menuText += `│  💬 *Prefix:* ${config.isPrefixless ? 'none' : prefix}\n`;
+        menuText += `│  📊 *Total Commands:* ${commands.size}\n`;
+        menuText += `│  ⏱️ *Uptime:* ${formatUptime(process.uptime())}\n`;
+        menuText += `└───────────────────────\n\n`;
+        
+        // Categories na commands zao
+        for (const [category, cmdList] of commandCategories) {
+            menuText += `┌─⊷⊷⊷⊷ *${getCategoryEmoji(category)} ${category.toUpperCase()}* ⊷⊷⊷⊷\n`;
+            menuText += `├───────────────────────\n`;
+            
+            cmdList.forEach(cmd => {
+                const cmdObj = commands.get(cmd);
+                const desc = cmdObj?.description || 'No description';
+                menuText += `│  ${prefix}${cmd}\n`;
+                menuText += `│  ↳ ${desc.substring(0, 40)}\n`;
+                menuText += `│\n`;
             });
+            menuText += `└───────────────────────\n\n`;
         }
         
-        // Build menu message
-        let menuMessage = `*╭┈┈┄⊰ ${botName} MENU ⊱┄┄┄◈*\n\n`;
+        // Footer
+        menuText += `🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺\n`;
+        menuText += `   *𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐓𝐲𝐫𝐞𝐱_𝐊𝐬𝐡 𝐓𝐞𝐜𝐡*\n`;
+        menuText += `🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺\n`;
         
-        // Sort categories
-        const categoryOrder = ['owner', 'group', 'general', 'automation', 'downloader', 'fun', 'tools'];
-        const sortedCategories = [...categories.keys()].sort((a, b) => {
-            const indexA = categoryOrder.indexOf(a.toLowerCase());
-            const indexB = categoryOrder.indexOf(b.toLowerCase());
-            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
-        
-        for (const category of sortedCategories) {
-            const cmdList = categories.get(category);
-            if (cmdList && cmdList.length > 0) {
-                menuMessage += `*┋ •> 📁 ${category.toUpperCase()}*\n`;
-                for (const cmd of cmdList) {
-                    menuMessage += `*┋ •> ${currentPrefix}${cmd.name}* - ${cmd.description}\n`;
-                }
-                menuMessage += `*┋*\n`;
-            }
-        }
-        
-        // Add footer
-        menuMessage += `*┋ •> 💬 Prefix:* ${config.isPrefixless ? 'none (prefixless)' : `"${currentPrefix}"`}\n`;
-        menuMessage += `*┋ •> 📊 Total:* ${commands.size} commands\n`;
-        menuMessage += `*╰┄┄┄┄┄┈┈┈┈┄┄┄◈*\n`;
-        menuMessage += `> ® 𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡`;
-        
-        await sock.sendMessage(chatId, {
-            text: menuMessage,
-            contextInfo: {
-                forwardingScore: 0,
-                isForwarded: false,
-                externalAdReply: {
-                    title: `${botName} v${version}`,
-                    body: `${commands.size} Commands Available`,
-                    mediaType: 1,
-                    thumbnailUrl: 'https://i.ibb.co/XftY01RL/sila-smd.png',
-                    sourceUrl: 'https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02',
-                    mediaUrl: 'https://i.ibb.co/XftY01RL/sila-smd.png'
-                }
-            }
+        await sock.sendMessage(chatId, { 
+            text: menuText,
+            contextInfo: config.getContextInfo(msg)
         }, { quoted: msg });
-        
-        return true;
     }
 };
+
+// Helper functions
+function formatUptime(seconds) {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
+    if (minutes > 0) return `${minutes}m ${secs}s`;
+    return `${secs}s`;
+}
+
+function getCategoryEmoji(category) {
+    const emojis = {
+        'general': '📋',
+        'admin': '👑',
+        'owner': '👤',
+        'group': '👥',
+        'download': '⬇️',
+        'search': '🔍',
+        'fun': '🎮',
+        'nsfw': '🔞',
+        'ai': '🧠',
+        'tools': '🛠️'
+    };
+    return emojis[category.toLowerCase()] || '📁';
+}
