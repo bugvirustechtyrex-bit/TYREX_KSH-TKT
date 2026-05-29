@@ -1,6 +1,5 @@
 // ============================================
-// SCHEDULE COMMAND - Auto open/close group
-// Fixed time validation
+// SCHEDULE COMMAND - With built-in checker
 // Powered by Tyrex KSH Tech
 // ============================================
 
@@ -11,6 +10,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SCHEDULE_FILE = path.join(__dirname, '../../database', 'schedule.json');
+
+// Global variable to store sock instance
+let globalSock = null;
 
 // Function to load schedules
 function loadSchedules() {
@@ -40,7 +42,6 @@ function saveSchedules(data) {
 
 // Function to validate time
 function isValidTime(time) {
-    // Check format HH:MM
     if (!time || time.length !== 5) return false;
     if (time[2] !== ':') return false;
     
@@ -54,6 +55,85 @@ function isValidTime(time) {
     return true;
 }
 
+// Function to check and apply schedule
+async function checkAndApply(chatId, schedule) {
+    if (!globalSock) {
+        console.log('❌ Bot not connected yet');
+        return;
+    }
+    
+    if (!schedule || !schedule.enabled) return;
+    
+    try {
+        const now = new Date();
+        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        let shouldBeOpen = false;
+        
+        // Check if current time is between open and close
+        if (schedule.open <= schedule.close) {
+            // Same day schedule (e.g., 08:00 - 17:00)
+            shouldBeOpen = currentTime >= schedule.open && currentTime < schedule.close;
+        } else {
+            // Overnight schedule (e.g., 22:00 - 06:00)
+            shouldBeOpen = currentTime >= schedule.open || currentTime < schedule.close;
+        }
+        
+        const targetSetting = shouldBeOpen ? 'not_announcement' : 'announcement';
+        
+        // Get current group setting
+        const groupMeta = await globalSock.groupMetadata(chatId);
+        const currentSetting = groupMeta.announce ? 'announcement' : 'not_announcement';
+        
+        // Only update if different
+        if (currentSetting !== targetSetting) {
+            await globalSock.groupSettingUpdate(chatId, targetSetting);
+            const action = shouldBeOpen ? '🔓 OPENED' : '🔒 CLOSED';
+            console.log(`[${new Date().toLocaleString()}] ${action} group: ${chatId} (Schedule: ${schedule.open} - ${schedule.close})`);
+            
+            // Send notification to group
+            try {
+                await globalSock.sendMessage(chatId, {
+                    text: `⏰ *AUTO SCHEDULE*\n\n${action}\n📅 Time: ${schedule.open} - ${schedule.close}`
+                });
+            } catch (e) {}
+        }
+    } catch (e) {
+        console.error('Apply error:', e.message);
+    }
+}
+
+// Start auto checker
+export function startAutoChecker(sock) {
+    globalSock = sock;
+    console.log('⏰ Auto schedule checker STARTED (checks every 30 seconds)');
+    
+    // Check immediately
+    setTimeout(async () => {
+        const schedules = loadSchedules();
+        for (const [chatId, schedule] of Object.entries(schedules)) {
+            if (schedule.enabled) {
+                await checkAndApply(chatId, schedule);
+            }
+        }
+    }, 5000);
+    
+    // Check every 30 seconds
+    setInterval(async () => {
+        const schedules = loadSchedules();
+        let checked = 0;
+        for (const [chatId, schedule] of Object.entries(schedules)) {
+            if (schedule.enabled) {
+                await checkAndApply(chatId, schedule);
+                checked++;
+            }
+        }
+        if (checked > 0) {
+            console.log(`⏰ Checked ${checked} group(s) at ${new Date().toLocaleTimeString()}`);
+        }
+    }, 30000); // Check every 30 seconds
+}
+
 export default {
     name: 'schedule',
     description: 'Set group auto open/close time',
@@ -63,6 +143,9 @@ export default {
     async execute(sock, msg, args, prefix, config) {
         const chatId = msg.key.remoteJid;
         const sender = msg.key.participant || chatId;
+        
+        // Set global sock if not set
+        if (!globalSock) globalSock = sock;
         
         // Check if group
         if (!chatId.endsWith('@g.us')) {
@@ -93,8 +176,10 @@ export default {
             }
             
             const status = data.enabled ? '✅ ENABLED' : '❌ DISABLED';
+            const currentSetting = groupMeta.announce ? 'CLOSED' : 'OPEN';
+            
             await sock.sendMessage(chatId, {
-                text: `━━━━━━━━━━━━━━━━━━\n     📅 *SCHEDULE INFO* 📅\n━━━━━━━━━━━━━━━━━━\n\n📊 Status: ${status}\n🔓 Open: ${data.open}\n🔒 Close: ${data.close}\n━━━━━━━━━━━━━━━━━━`
+                text: `━━━━━━━━━━━━━━━━━━\n     📅 *SCHEDULE INFO* 📅\n━━━━━━━━━━━━━━━━━━\n\n📊 Status: ${status}\n🔓 Open: ${data.open}\n🔒 Close: ${data.close}\n📌 Current: ${currentSetting}\n━━━━━━━━━━━━━━━━━━`
             }, { quoted: msg });
             return;
         }
@@ -130,11 +215,11 @@ export default {
             saveSchedules(schedules);
             
             await sock.sendMessage(chatId, {
-                text: `✅ *Schedule Set!*\n\n🔓 Open: ${openTime}\n🔒 Close: ${closeTime}\n\n⚡ Auto schedule ENABLED`
+                text: `✅ *Schedule Set!*\n\n🔓 Open: ${openTime}\n🔒 Close: ${closeTime}\n\n⚡ Auto schedule ENABLED\n⏰ Bot will check time every 30 seconds`
             }, { quoted: msg });
             
             // Apply immediately
-            await checkAndApply(sock, chatId, schedules[chatId]);
+            await checkAndApply(chatId, schedules[chatId]);
             return;
         }
         
@@ -147,7 +232,7 @@ export default {
             schedules[chatId].enabled = true;
             saveSchedules(schedules);
             await sock.sendMessage(chatId, { text: '✅ Schedule ENABLED - Group will auto open/close' }, { quoted: msg });
-            await checkAndApply(sock, chatId, schedules[chatId]);
+            await checkAndApply(chatId, schedules[chatId]);
             return;
         }
         
@@ -173,42 +258,7 @@ export default {
         
         // ========== HELP ==========
         await sock.sendMessage(chatId, {
-            text: `📅 *SCHEDULE COMMANDS*\n\n${prefix}schedule info - Show schedule\n${prefix}schedule set 08:00 17:00 - Set time\n${prefix}schedule enable - Turn on\n${prefix}schedule disable - Turn off\n${prefix}schedule delete - Remove schedule\n\n📌 *Example:* ${prefix}schedule set 08:00 17:00`
+            text: `📅 *SCHEDULE COMMANDS*\n\n${prefix}schedule info - Show schedule\n${prefix}schedule set 08:00 17:00 - Set time\n${prefix}schedule enable - Turn on\n${prefix}schedule disable - Turn off\n${prefix}schedule delete - Remove schedule\n\n📌 *Example:* ${prefix}schedule set 08:00 17:00\n\n⏰ Bot checks time every 30 seconds`
         }, { quoted: msg });
     }
 };
-
-// Function to check and apply schedule
-async function checkAndApply(sock, chatId, schedule) {
-    if (!schedule || !schedule.enabled) return;
-    
-    try {
-        const now = new Date();
-        const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-        
-        const shouldBeOpen = currentTime >= schedule.open && currentTime < schedule.close;
-        const targetSetting = shouldBeOpen ? 'not_announcement' : 'announcement';
-        
-        const groupMeta = await sock.groupMetadata(chatId);
-        if (groupMeta.announce !== targetSetting) {
-            await sock.groupSettingUpdate(chatId, targetSetting);
-            console.log(`[${chatId}] ${shouldBeOpen ? 'OPENED' : 'CLOSED'} at ${currentTime}`);
-        }
-    } catch (e) {
-        console.error('Apply error:', e.message);
-    }
-}
-
-// Auto checker - call this from your main file
-export function startAutoChecker(sock) {
-    console.log('⏰ Auto schedule checker started (checks every minute)');
-    
-    setInterval(async () => {
-        const schedules = loadSchedules();
-        for (const [chatId, schedule] of Object.entries(schedules)) {
-            if (schedule.enabled) {
-                await checkAndApply(sock, chatId, schedule);
-            }
-        }
-    }, 60000); // Check every minute
-}
