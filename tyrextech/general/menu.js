@@ -1,96 +1,174 @@
 // ============================================
-// MENU COMMAND - Display bot menu with style
-// Powered by Tyrex_Ksh Tech
+// MENU COMMAND - Show bot menu
+// Powered by TYREX KSH TECH
+// Owner: 255650583044
 // ============================================
 
 export default {
     name: 'menu',
-    description: 'Display bot menu with all commands',
-    category: 'general',
-    alias: ['m', 'allmenu', 'cmdlist', 'menulist'],
+    description: 'Show all available bot commands',
+    category: 'main',
+    alias: ['help', 'commands', 'cmds', 'cmdlist'],
     
     async execute(sock, msg, args, prefix, config) {
-        const chatId = msg.key.remoteJid;
-        const commands = config.commands || new Map();
-        
-        // Collect commands by category
-        const categories = new Map();
-        
-        for (const [cmdName, cmdObj] of commands) {
-            const category = cmdObj.category || 'general';
-            if (!categories.has(category)) {
-                categories.set(category, []);
-            }
-            categories.get(category).push(cmdName);
-        }
-        
-        // Header ya menu
-        let menuText = `🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸\n`;
-        menuText += `   *𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃 𝐌𝐄𝐍𝐔*\n`;
-        menuText += `🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸🌸\n\n`;
-        
-        menuText += `┌─⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷⊷\n`;
-        menuText += `│  ✨ *BOT INFORMATION* ✨\n`;
-        menuText += `├───────────────────────\n`;
-        menuText += `│  🤖 *Name:* ${config.BOT_NAME || 'TYREX_KSH MD'}\n`;
-        menuText += `│  📌 *Version:* ${config.BOT_VERSION || '1.0.0'}\n`;
-        menuText += `│  💬 *Prefix:* ${config.isPrefixless ? 'none' : prefix}\n`;
-        menuText += `│  📊 *Total Commands:* ${commands.size}\n`;
-        menuText += `│  ⏱️ *Uptime:* ${formatUptime(process.uptime())}\n`;
-        menuText += `└───────────────────────\n\n`;
-        
-        // Categories na commands zao
-        for (const [category, cmdList] of categories) {
-            menuText += `┌─⊷⊷⊷⊷ *${getCategoryEmoji(category)} ${category.toUpperCase()}* ⊷⊷⊷⊷\n`;
-            menuText += `├───────────────────────\n`;
+        try {
+            const chatId = msg.key.remoteJid;
+            const sender = msg.key.participant || chatId;
             
-            for (const cmd of cmdList) {
-                const cmdObj = commands.get(cmd);
-                const desc = cmdObj?.description || 'No description';
-                menuText += `│  ${prefix}${cmd}\n`;
-                menuText += `│  ↳ ${desc.substring(0, 40)}\n`;
-                menuText += `│\n`;
+            // Bot information
+            const botName = "༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒";
+            const version = "2.0.0";
+            const ownerNumber = "255650583044";
+            
+            // Get commands from config
+            const commandsMap = config.commands || new Map();
+            
+            // Organize commands by category
+            const cmdCategories = {
+                owner: [],
+                admin: [],
+                main: [],
+                fun: [],
+                downloader: []
+            };
+            
+            // Categorize commands based on their category property
+            for (const [cmdName, cmdObj] of commandsMap) {
+                const category = cmdObj.category || 'main';
+                if (cmdCategories[category]) {
+                    cmdCategories[category].push({
+                        name: cmdName,
+                        desc: cmdObj.description || 'No description'
+                    });
+                } else {
+                    cmdCategories.main.push({
+                        name: cmdName,
+                        desc: cmdObj.description || 'No description'
+                    });
+                }
             }
-            menuText += `└───────────────────────\n\n`;
+            
+            // If no commands found, use default list
+            let totalCommands = 0;
+            if (commandsMap.size === 0) {
+                // Default commands
+                cmdCategories.owner = [
+                    { name: "bc", desc: "Broadcast message to all chats" },
+                    { name: "restart", desc: "Restart bot" },
+                    { name: "shutdown", desc: "Stop bot" },
+                    { name: "setprefix", desc: "Change bot prefix" }
+                ];
+                cmdCategories.admin = [
+                    { name: "kick", desc: "Remove member from group" },
+                    { name: "promote", desc: "Make member admin" },
+                    { name: "demote", desc: "Remove admin status" },
+                    { name: "mute", desc: "Mute group" },
+                    { name: "unmute", desc: "Unmute group" }
+                ];
+                cmdCategories.main = [
+                    { name: "ping2", desc: "Check bot speed" },
+                    { name: "owner", desc: "Get owner information" },
+                    { name: "menu", desc: "Show this menu" }
+                ];
+                cmdCategories.fun = [
+                    { name: "sticker", desc: "Convert image to sticker" },
+                    { name: "quote", desc: "Get random quote" }
+                ];
+                cmdCategories.downloader = [
+                    { name: "ytmp3", desc: "Download YouTube audio" },
+                    { name: "ytmp4", desc: "Download YouTube video" }
+                ];
+            }
+            
+            // Calculate total commands
+            for (const cat in cmdCategories) {
+                totalCommands += cmdCategories[cat].length;
+            }
+            
+            // Build menu message
+            let menuMessage = `╭┄┄┄🌸🌹 *${botName}* 🌹🌸┄┄┄⊷\n`;
+            menuMessage += `┃ 📡 *Version:* ${version}\n`;
+            menuMessage += `┃ 👑 *Owner:* ${ownerNumber}\n`;
+            menuMessage += `┃ 💬 *Prefix:* ${prefix}\n`;
+            menuMessage += `┃\n`;
+            
+            // Owner commands
+            if (cmdCategories.owner.length > 0) {
+                menuMessage += `┃ 👑 *OWNER COMMANDS*\n`;
+                for (const cmd of cmdCategories.owner) {
+                    menuMessage += `┃ ├─ ${prefix}${cmd.name} - ${cmd.desc}\n`;
+                }
+                menuMessage += `┃\n`;
+            }
+            
+            // Admin commands
+            if (cmdCategories.admin.length > 0) {
+                menuMessage += `┃ ⚙️ *ADMIN COMMANDS*\n`;
+                for (const cmd of cmdCategories.admin) {
+                    menuMessage += `┃ ├─ ${prefix}${cmd.name} - ${cmd.desc}\n`;
+                }
+                menuMessage += `┃\n`;
+            }
+            
+            // Main commands
+            if (cmdCategories.main.length > 0) {
+                menuMessage += `┃ 📜 *MAIN COMMANDS*\n`;
+                for (const cmd of cmdCategories.main) {
+                    menuMessage += `┃ ├─ ${prefix}${cmd.name} - ${cmd.desc}\n`;
+                }
+                menuMessage += `┃\n`;
+            }
+            
+            // Fun commands
+            if (cmdCategories.fun.length > 0) {
+                menuMessage += `┃ 🎮 *FUN COMMANDS*\n`;
+                for (const cmd of cmdCategories.fun) {
+                    menuMessage += `┃ ├─ ${prefix}${cmd.name} - ${cmd.desc}\n`;
+                }
+                menuMessage += `┃\n`;
+            }
+            
+            // Downloader commands
+            if (cmdCategories.downloader.length > 0) {
+                menuMessage += `┃ 📥 *DOWNLOADER COMMANDS*\n`;
+                for (const cmd of cmdCategories.downloader) {
+                    menuMessage += `┃ ├─ ${prefix}${cmd.name} - ${cmd.desc}\n`;
+                }
+                menuMessage += `┃\n`;
+            }
+            
+            // Footer
+            menuMessage += `┃ 📊 *Total:* ${totalCommands} commands\n`;
+            menuMessage += `╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈⊷\n`;
+            menuMessage += `> ® Powered by Tyrex KSH Tech\n`;
+            menuMessage += `> 📢 Channel: https://whatsapp.com/channel/0029VafUeCvRWkqX7TQhVR0P`;
+            
+            await sock.sendMessage(chatId, {
+                text: menuMessage,
+                contextInfo: {
+                    forwardingScore: 999,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363424973782944@newsletter',
+                        newsletterName: '༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐓𝐄𝐂𝐇༒',
+                        serverMessageId: 143
+                    },
+                    externalAdReply: {
+                        title: `${botName} v${version}`,
+                        body: `${totalCommands} Commands Available`,
+                        thumbnailUrl: 'https://i.ibb.co/V0x5RCkK/file-00000000b26c720cbac7434c723b3ca4.png',
+                        sourceUrl: 'https://whatsapp.com/channel/0029VafUeCvRWkqX7TQhVR0P',
+                        mediaType: 1,
+                        renderLargerThumbnail: true
+                    }
+                }
+            }, { quoted: msg });
+            
+        } catch (e) {
+            console.log("Menu Error:", e);
+            await sock.sendMessage(chatId, { 
+                text: "❌ Error loading menu: " + e.message 
+            }, { quoted: msg });
         }
-        
-        // Footer
-        menuText += `🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺\n`;
-        menuText += `   *𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐓𝐲𝐫𝐞𝐱_𝐊𝐬𝐡 𝐓𝐞𝐜𝐡*\n`;
-        menuText += `🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺\n`;
-        
-        await sock.sendMessage(chatId, { 
-            text: menuText,
-            contextInfo: config.getContextInfo(msg)
-        }, { quoted: msg });
     }
 };
-
-// Helper functions
-function formatUptime(seconds) {
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
-    if (minutes > 0) return `${minutes}m ${secs}s`;
-    return `${secs}s`;
-}
-
-function getCategoryEmoji(category) {
-    const emojis = {
-        'general': '📋',
-        'admin': '👑',
-        'owner': '👤',
-        'group': '👥',
-        'download': '⬇️',
-        'search': '🔍',
-        'fun': '🎮',
-        'nsfw': '🔞',
-        'ai': '🧠',
-        'tools': '🛠️'
-    };
-    return emojis[category.toLowerCase()] || '📁';
-}
