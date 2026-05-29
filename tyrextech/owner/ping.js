@@ -14,9 +14,9 @@ export default {
 
     // Edit message na ping time halisi
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `🫵 *Pong!* \`${pingTime}ms\`
+      text: `🌸🫵 *Pong!* \`${pingTime}ms\` 🌷
 
-> *𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡*`,
+🌺 *𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐓𝐲𝐫𝐞𝐱_𝐊𝐬𝐡 𝐓𝐞𝐜𝐡* 🌺`,
       edit: sentMsg.key
     });
   }
