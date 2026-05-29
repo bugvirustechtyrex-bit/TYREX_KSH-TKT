@@ -1,6 +1,6 @@
 // ============================================
 // HELP COMMAND - Show all commands
-// Powered by SILA TECH
+// Powered by Tyrex_Ksh Tech
 // ============================================
 
 export default {
