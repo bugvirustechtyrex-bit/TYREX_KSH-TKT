@@ -52,7 +52,7 @@ console.log(chalk.blue(`📱 Mode: ${IS_HEROKU ? 'HEROKU (Auto)' : 'LOCAL (Menu)
 console.log(chalk.gray(`📁 Directory: ${__dirname}\n`));
 
 // Import main bot module (sila.js)
-import('./sila.js').catch((error) => {
+import('./tyrex.js').catch((error) => {
     console.error(chalk.red('❌ Failed to start bot:'), error.message);
     process.exit(1);
 });
