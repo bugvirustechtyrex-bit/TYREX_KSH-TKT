@@ -1,9 +1,9 @@
 {
-  "name": "TYREX KSH MD",
-  "description": "TYREX KSH MD - Premium WhatsApp Bot with Auto Session & Auto React",
-  "repository": "https://github.com/bugvirustechtyrex-bit/TYREX_KSH-TKT",
-  "logo": "https://i.ibb.co/V0x5RCkK/file-00000000b26c720cbac7434c723b3ca4.png",
-  "keywords": ["whatsapp-bot", "baileys", "tyrex-ksh", "md-bot", "tyrex"],
+  "name": "SILA SMD",
+  "description": "SILA SMD - Advanced WhatsApp Bot with Auto Session",
+  "repository": "https://github.com/YOUR_USERNAME/SILA-SMD",
+  "logo": "https://i.ibb.co/XftY01RL/sila-smd.png",
+  "keywords": ["whatsapp-bot", "baileys", "sila-smd", "md-bot"],
   "env": {
     "DEPLOY_MODE": {
       "description": "Deployment Mode: 1 = Heroku (auto session), 2 = Local (menu selection)",
@@ -11,7 +11,7 @@
       "required": true
     },
     "SESSION_ID": {
-      "description": "Your Session ID (Required for Heroku mode - Get from session generators)",
+      "description": "Your Session ID (Required for Heroku mode)",
       "value": "",
       "required": true
     },
@@ -22,22 +22,12 @@
     },
     "BOT_NAME": {
       "description": "Bot display name",
-      "value": "༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒",
+      "value": "𝚂𝙸𝙻𝙰 𝚂𝙼𝙳",
       "required": false
     },
     "OWNER_NUMBER": {
       "description": "Owner phone number (without +)",
-      "value": "255650583044",
-      "required": false
-    },
-    "CHANNEL_JID": {
-      "description": "Newsletter/Channel JID for auto follow and react",
-      "value": "120363424973782944@newsletter",
-      "required": false
-    },
-    "GROUP_LINK": {
-      "description": "WhatsApp Group invite link",
-      "value": "https://chat.whatsapp.com/CGJQ0TGin3w4FmG3bKZ2d3",
+      "value": "",
       "required": false
     },
     "TZ": {
