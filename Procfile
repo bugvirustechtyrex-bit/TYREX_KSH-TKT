@@ -1,1 +1,1 @@
-worker: node tyrexmain.js
+worker: node index.js
