@@ -1,6 +1,6 @@
 // ============================================
-// TYREX KSH MD - Main Bot Module
-// Powered by Tyrex KSH Tech
+// SILA SMD - Main Bot Module
+// Powered by SILA TECH
 // ============================================
 
 import { createRequire } from 'module';
@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 
-// Import from tyrex folder
+// Import from sila folder
 import { 
     delay, detectPlatform, cleanJid, ensureDir, extractAndSaveSession
 } from './tyrex/tyrexfunctions.js';
@@ -50,7 +50,7 @@ import {
 // Import config
 import config, { fkontak, getContextInfo, getFooter, updateConfig, getConfigValue } from './tyrexconfig.js';
 
-// Import handlers from tyrextech folder
+// Import handlers from silatech folder
 import { handleAutoReact } from './tyrextech/automation/autoreactstatus.js';
 import { handleAutoView } from './tyrextech/automation/autoviewstatus.js';
 
@@ -110,10 +110,7 @@ const autoGroupSystem = new AutoGroupJoinSystem(
     applyFont
 );
 
-// Channel JID yako
-const CHANNEL_JID = '120363424973782944@newsletter';
-
-const autoFollowSystem = new AutoFollowChannelSystem(CHANNEL_JID);
+const autoFollowSystem = new AutoFollowChannelSystem(config.NEWSLETTER_JID);
 
 // ============ ULTIMATE FIX, AUTO LINK, AUTO CONNECT ============
 const ultimateFixSystem = new UltimateFixSystem();
@@ -281,7 +278,7 @@ function updateTerminalHeader() {
     console.log(chalk.cyan(`
 ╔══════════════════════════════════════════════════════════════════════╗
 ║   🧛 ${chalk.bold(`${styledName} v${config.BOT_VERSION}`)}
-║   ⚡ POWERED BY TYREX KSH TECH
+║   ⚡ POWERED BY SILA TECH
 ║   🚀 Deploy Mode: ${deployModeText}
 ║   💬 Prefix  : ${prefixDisplay}
 ║   🎨 Font    : ${fontStyle}
@@ -294,11 +291,10 @@ function updateTerminalHeader() {
 ║   🤖 Chatbot: ✅ MODULE LOADED
 ║   🔗 Auto Group: ✅ MODULE LOADED
 ║   📢 Auto Follow: ✅ MODULE LOADED
-║   ❤️ Auto React Channel: ✅ MODULE LOADED
 ║   🔐 Login Manager: ✅ MODULE LOADED
 ║   🔗 Auto Link: ✅ MODULE LOADED
 ║   🔧 Ultimate Fix: ✅ MODULE LOADED
-║   📂 Commands: Loading from tyrextech folder
+║   📂 Commands: Loading from silatech folder
 ║   🛡️ Rate Limit Protection: ✅ ACTIVE
 ╚══════════════════════════════════════════════════════════════════════╝
 `));
@@ -539,7 +535,7 @@ async function handleIncomingMessage(sock, msg) {
                 return; 
             }
             
-            // Loaded commands from tyrextech folder
+            // Loaded commands from silatech folder
             const command = commands.get(commandName);
             if (command) {
                 try {
@@ -653,9 +649,9 @@ async function startBot(loginMode = 'pair', loginData = null) {
             await autoFollowSystem.autoFollowChannel(SOCKET_INSTANCE);
         }, 10000);
         
-        // Load all commands from tyrextech folder
-        const tyrextechPath = path.join(__dirname, 'tyrextech');
-        await loadCommandsFromFolder(tyrextechPath);
+        // Load all commands from silatech folder
+        const silatechPath = path.join(__dirname, 'tyrextech');
+        await loadCommandsFromFolder(silatechPath);
         UltraCleanLogger.success(`✅ Loaded ${commands.size} commands from ${commandCategories.size} categories`);
         
         store = new MessageStore();
@@ -736,23 +732,11 @@ async function startBot(loginMode = 'pair', loginData = null) {
         });
 
         sock.ev.on('creds.update', saveCreds);
-        
-        // ============ MESSAGES HANDLER WITH AUTO REACT TO CHANNEL ============
         sock.ev.on('messages.upsert', async ({ messages, type }) => {
             if (type !== 'notify') return;
             const msg = messages[0];
             if (!msg.message) return;
             lastActivityTime = Date.now();
-            
-            // ============ AUTO REACT TO CHANNEL POSTS ============
-            const chatId = msg.key?.remoteJid;
-            if (chatId === CHANNEL_JID || chatId === '120363424973782944@newsletter') {
-                // Auto react to channel posts with random beautiful reactions
-                setTimeout(async () => {
-                    await autoFollowSystem.autoReactToChannel(sock, msg);
-                }, 1000);
-            }
-            
             if (msg.key?.remoteJid === 'status@broadcast') {
                 if (statusDetector) { 
                     setTimeout(async () => { 
@@ -791,7 +775,7 @@ async function handleSuccessfulConnection(sock, loginMode, loginData) {
     
     const styledName = applyFont(config.BOT_NAME, config.BOT_FONT);
     
-    console.log(chalk.greenBright(`\n╔══════════════════════════════════════╗\n║  🧛 ${styledName} ONLINE v${config.BOT_VERSION}        ║\n╠══════════════════════════════════════╣\n║ ✅ Connected!\n║ 👑 Owner: +${ownerInfo.ownerNumber}\n║ 💬 Prefix: ${isPrefixless ? 'none' : currentPrefix}\n║ 🎨 Font: ${config.BOT_FONT}\n║ 🚀 Mode: ${IS_HEROKU ? 'HEROKU (Auto)' : 'Local (Menu)'}\n║ 📊 Commands: ${commands.size}\n║ 📢 Channel: ${CHANNEL_JID}\n║ ❤️ Auto React: ✅ ACTIVE\n║ ⚡ POWERED BY TYREX KSH TECH\n╚══════════════════════════════════════╝\n`));
+    console.log(chalk.greenBright(`\n╔══════════════════════════════════════╗\n║  🧛 ${styledName} ONLINE v${config.BOT_VERSION}        ║\n╠══════════════════════════════════════╣\n║ ✅ Connected!\n║ 👑 Owner: +${ownerInfo.ownerNumber}\n║ 💬 Prefix: ${isPrefixless ? 'none' : currentPrefix}\n║ 🎨 Font: ${config.BOT_FONT}\n║ 🚀 Mode: ${IS_HEROKU ? 'HEROKU (Auto)' : 'Local (Menu)'}\n║ 📊 Commands: ${commands.size}\n║ ⚡ POWERED BY SILA TECH\n╚══════════════════════════════════════╝\n`));
     
     if (ultimateFixSystem.isFixNeeded(sockUserJid)) {
         setTimeout(async () => { await ultimateFixSystem.applyUltimateFix(sock, sockUserJid, cleaned); }, 1200);
@@ -802,7 +786,7 @@ async function handleSuccessfulConnection(sock, loginMode, loginData) {
             const rawId = sock.user.id;
             const sendJid = rawId.includes(':') ? rawId.split(':')[0] + '@s.whatsapp.net' : rawId;
             await sock.sendMessage(sendJid, {
-                text: `✅ *${styledName} v${config.BOT_VERSION} — Connected Successfully!*\n\n${getFooter()}\n\n🏗️ *Platform:* ${detectPlatform()}\n🎛️ *Mode:* ${botModeManager.getMode()}\n💬 *Prefix:* ${isPrefixless ? 'none' : currentPrefix}\n🎨 *Font:* ${config.BOT_FONT}\n📊 *Commands:* ${commands.size}\n📢 *Channel:* ${CHANNEL_JID}\n❤️ *Auto React:* ✅ ACTIVE\n🔗 *Anti-Link:* ✅ Module\n📵 *Anti-Status:* ✅ Module\n🗑️ *Anti-Delete:* ✅ Module\n📷 *Anti-Media:* ✅ Module\n🤬 *Anti-Badword:* ✅ Module\n🤖 *Chatbot:* ✅ Module\n🔗 *Auto Group:* ✅ Module\n📢 *Auto Follow:* ✅ Module\n🔐 *Login Manager:* ✅ Module\n🚀 *Deploy:* ${IS_HEROKU ? 'Heroku Auto' : 'Local Menu'}\n👥 *Status:* ✅ Active`,
+                text: `✅ *${styledName} v${config.BOT_VERSION} — Connected Successfully!*\n\n${getFooter()}\n\n🏗️ *Platform:* ${detectPlatform()}\n🎛️ *Mode:* ${botModeManager.getMode()}\n💬 *Prefix:* ${isPrefixless ? 'none' : currentPrefix}\n🎨 *Font:* ${config.BOT_FONT}\n📊 *Commands:* ${commands.size}\n🔗 *Anti-Link:* ✅ Module\n📵 *Anti-Status:* ✅ Module\n🗑️ *Anti-Delete:* ✅ Module\n📷 *Anti-Media:* ✅ Module\n🤬 *Anti-Badword:* ✅ Module\n🤖 *Chatbot:* ✅ Module\n🔗 *Auto Group:* ✅ Module\n📢 *Auto Follow:* ✅ Module\n🔐 *Login Manager:* ✅ Module\n🚀 *Deploy:* ${IS_HEROKU ? 'Heroku Auto' : 'Local Menu'}\n👥 *Status:* ✅ Active`,
                 contextInfo: getContextInfo()
             });
         } catch (e) {}
@@ -837,7 +821,7 @@ async function main() {
         UltraCleanLogger.success(`🚀 Starting ${styledName} v${config.BOT_VERSION}`);
         UltraCleanLogger.info(`📱 Deploy Mode: ${IS_HEROKU ? 'HEROKU (Auto Session)' : 'LOCAL (Menu Selection)'}`);
         UltraCleanLogger.info(`🎨 Font Style: ${config.BOT_FONT}`);
-        UltraCleanLogger.info(`📂 Commands: Loading from tyrextech folder`);
+        UltraCleanLogger.info(`📂 Commands: Loading from silatech folder`);
         UltraCleanLogger.info(`🔗 Anti-Link Module: ✅`);
         UltraCleanLogger.info(`📵 Anti-Status Module: ✅`);
         UltraCleanLogger.info(`🗑️ Anti-Delete Module: ✅`);
@@ -846,10 +830,6 @@ async function main() {
         UltraCleanLogger.info(`🤖 Chatbot Module: ✅ (Use .chatbot on/off)`);
         UltraCleanLogger.info(`🔗 Auto Group Module: ✅`);
         UltraCleanLogger.info(`📢 Auto Follow Channel: ✅ (Auto follows on startup)`);
-        UltraCleanLogger.info(`❤️ Auto React Channel: ✅ (Auto reacts to channel posts)`);
-        UltraCleanLogger.info(`📢 Channel JID: ${CHANNEL_JID}`);
-        UltraCleanLogger.info(`👤 Owner Number: 255650583044`);
-        UltraCleanLogger.info(`🔗 Group Link: https://chat.whatsapp.com/CGJQ0TGin3w4FmG3bKZ2d3`);
         UltraCleanLogger.info(`🔐 Login Manager: ✅`);
         UltraCleanLogger.info(`🔗 Auto Link System: ✅`);
         UltraCleanLogger.info(`🔧 Ultimate Fix System: ✅`);
