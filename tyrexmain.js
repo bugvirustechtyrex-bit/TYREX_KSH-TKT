@@ -1,16 +1,35 @@
-// tyrexmain.js
+// tyrexmain.js - Simple Heroku Bot
+import chalk from 'chalk';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 import fs from 'fs';
-import chalk from 'chalk';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-const BOT_NAME = process.env.BOT_NAME || '༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒';
+const BOT_NAME = '༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒';
 const CHANNEL_JID = '120363424973782944@newsletter';
 const OWNER_NUMBER = '255650583044';
-const REACTIONS = ['❤️', '🔥', '⭐', '👑', '💎', '✨', '🌟', '💪', '🎯', '🚀', '💯', '👏'];
+
+const REACTIONS = ['❤️', '🔥', '⭐', '👑', '💎', '✨', '🌟', '💪', '🎯', '🚀', '💯', '👏', '🙌', '👍', '💙', '💚', '💛', '💜', '🧡', '💝', '💖', '💗'];
+
+console.log(chalk.cyan(`
+╔════════════════════════════════════════════════════════════════╗
+║   🧛 ${BOT_NAME}
+║   ⚡ POWERED BY TYREX KSH TECH
+║   📢 Channel: ${CHANNEL_JID}
+║   👤 Owner: ${OWNER_NUMBER}
+║   ❤️ Auto React: ACTIVE
+║   🚀 Heroku Mode
+╚════════════════════════════════════════════════════════════════╝
+`));
+
+// Check SESSION_ID
+const SESSION_ID = process.env.SESSION_ID;
+if (!SESSION_ID || SESSION_ID === '') {
+    console.log(chalk.red('❌ SESSION_ID is required!'));
+    console.log(chalk.yellow('Run: heroku config:set SESSION_ID="your_session_id"'));
+    process.exit(1);
+}
+
+console.log(chalk.green(`✅ SESSION_ID loaded\n`));
 
 async function start() {
     try {
@@ -31,21 +50,38 @@ async function start() {
         });
         
         sock.ev.on('connection.update', async (update) => {
-            const { connection } = update;
+            const { connection, qr } = update;
+            
+            if (qr) {
+                console.log(chalk.yellow('📱 Scan QR code to login'));
+            }
+            
             if (connection === 'open') {
-                console.log(chalk.green('✅ Bot Connected!'));
-                console.log(chalk.cyan(`📢 Auto-following channel: ${CHANNEL_JID}`));
+                console.log(chalk.green('\n✅ Bot Connected Successfully!\n'));
                 
+                // Follow channel
                 try {
                     await sock.newsletterFollow(CHANNEL_JID);
-                    console.log(chalk.green('✅ Followed channel!'));
+                    console.log(chalk.green('✅ Auto-followed channel!'));
                 } catch(e) {
                     console.log(chalk.yellow('⚠️ Could not follow channel'));
                 }
+                
+                // Notify owner
+                try {
+                    await sock.sendMessage(OWNER_NUMBER + '@s.whatsapp.net', {
+                        text: `✅ *${BOT_NAME} is ONLINE!*\n\n📢 Channel: ${CHANNEL_JID}\n❤️ Auto React: ACTIVE\n📅 Time: ${new Date().toLocaleString()}`
+                    });
+                } catch(e) {}
+            }
+            
+            if (connection === 'close') {
+                console.log(chalk.yellow('⚠️ Connection closed. Reconnecting...'));
+                setTimeout(() => start(), 5000);
             }
         });
         
-        // Auto react to channel
+        // Auto react to channel posts
         sock.ev.on('messages.upsert', async ({ messages }) => {
             const msg = messages[0];
             if (!msg.message) return;
@@ -56,7 +92,7 @@ async function start() {
                     await sock.sendMessage(CHANNEL_JID, {
                         react: { text: react, key: msg.key }
                     });
-                    console.log(`❤️ Reacted: ${react}`);
+                    console.log(`❤️ Auto-reacted: ${react}`);
                 } catch(e) {}
             }
         });
@@ -71,8 +107,8 @@ async function start() {
         }, 60000);
         
     } catch (error) {
-        console.error('Error:', error.message);
-        setTimeout(start, 5000);
+        console.error(chalk.red('❌ Error:'), error.message);
+        setTimeout(() => start(), 10000);
     }
 }
 
