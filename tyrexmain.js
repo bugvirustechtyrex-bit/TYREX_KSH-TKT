@@ -1,4 +1,4 @@
-// tyrexmain.js - Simple Heroku Bot
+// tyrexmain.js - With QR code in logs
 import chalk from 'chalk';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -8,9 +8,9 @@ const BOT_NAME = '༒𝐓𝐘𝐑𝐄𝐗_𝐊𝐒𝐇 𝐌𝐃༒';
 const CHANNEL_JID = '120363424973782944@newsletter';
 const OWNER_NUMBER = '255650583044';
 
-const REACTIONS = ['❤️', '🔥', '⭐', '👑', '💎', '✨', '🌟', '💪', '🎯', '🚀', '💯', '👏', '🙌', '👍', '💙', '💚', '💛', '💜', '🧡', '💝', '💖', '💗'];
+const REACTIONS = ['❤️', '🔥', '⭐', '👑', '💎', '✨', '🌟', '💪', '🎯', '🚀', '💯', '👏'];
 
-console.log(chalk.cyan(`
+console.log(`
 ╔════════════════════════════════════════════════════════════════╗
 ║   🧛 ${BOT_NAME}
 ║   ⚡ POWERED BY TYREX KSH TECH
@@ -19,23 +19,21 @@ console.log(chalk.cyan(`
 ║   ❤️ Auto React: ACTIVE
 ║   🚀 Heroku Mode
 ╚════════════════════════════════════════════════════════════════╝
-`));
+`);
 
-// Check SESSION_ID
 const SESSION_ID = process.env.SESSION_ID;
 if (!SESSION_ID || SESSION_ID === '') {
-    console.log(chalk.red('❌ SESSION_ID is required!'));
-    console.log(chalk.yellow('Run: heroku config:set SESSION_ID="your_session_id"'));
+    console.log('❌ SESSION_ID is required!');
+    console.log('Run: heroku config:set SESSION_ID="your_session_id"');
     process.exit(1);
 }
 
-console.log(chalk.green(`✅ SESSION_ID loaded\n`));
+console.log('✅ SESSION_ID loaded\n');
 
 async function start() {
     try {
         const { default: makeWASocket, useMultiFileAuthState, Browsers } = await import('@whiskeysockets/baileys');
         
-        // Create session directory
         if (!fs.existsSync('./session')) {
             fs.mkdirSync('./session', { recursive: true });
         }
@@ -53,21 +51,24 @@ async function start() {
             const { connection, qr } = update;
             
             if (qr) {
-                console.log(chalk.yellow('📱 Scan QR code to login'));
+                console.log('\n📱 SCAN THIS QR CODE WITH WHATSAPP:\n');
+                console.log(qr);
+                console.log('\n1. Open WhatsApp on your phone');
+                console.log('2. Tap Settings → Linked Devices');
+                console.log('3. Tap "Link a Device"');
+                console.log('4. Scan this QR code\n');
             }
             
             if (connection === 'open') {
-                console.log(chalk.green('\n✅ Bot Connected Successfully!\n'));
+                console.log('\n✅ Bot Connected Successfully!\n');
                 
-                // Follow channel
                 try {
                     await sock.newsletterFollow(CHANNEL_JID);
-                    console.log(chalk.green('✅ Auto-followed channel!'));
+                    console.log('✅ Auto-followed channel!');
                 } catch(e) {
-                    console.log(chalk.yellow('⚠️ Could not follow channel'));
+                    console.log('⚠️ Could not follow channel');
                 }
                 
-                // Notify owner
                 try {
                     await sock.sendMessage(OWNER_NUMBER + '@s.whatsapp.net', {
                         text: `✅ *${BOT_NAME} is ONLINE!*\n\n📢 Channel: ${CHANNEL_JID}\n❤️ Auto React: ACTIVE\n📅 Time: ${new Date().toLocaleString()}`
@@ -76,12 +77,11 @@ async function start() {
             }
             
             if (connection === 'close') {
-                console.log(chalk.yellow('⚠️ Connection closed. Reconnecting...'));
+                console.log('⚠️ Connection closed. Reconnecting...');
                 setTimeout(() => start(), 5000);
             }
         });
         
-        // Auto react to channel posts
         sock.ev.on('messages.upsert', async ({ messages }) => {
             const msg = messages[0];
             if (!msg.message) return;
@@ -99,7 +99,6 @@ async function start() {
         
         sock.ev.on('creds.update', saveCreds);
         
-        // Keep alive
         setInterval(async () => {
             try {
                 await sock.sendPresenceUpdate('available');
@@ -107,7 +106,7 @@ async function start() {
         }, 60000);
         
     } catch (error) {
-        console.error(chalk.red('❌ Error:'), error.message);
+        console.error('❌ Error:', error.message);
         setTimeout(() => start(), 10000);
     }
 }
